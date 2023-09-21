@@ -1,26 +1,27 @@
-name: Sync Notion pages to posts
+name: 'build-test'
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
 
-on:
-  schedule:
-    - cron: '0 20 * * *'
-    
 jobs:
-  sync:
+  build: # make sure build/ci work properly
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Generate posts
-        uses: bndynet/github-action-notion@v1
+      - uses: actions/checkout@v2
+      - run: |
+          npm install
+      - run: |
+          npm run all
+  test: # make sure the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
         with:
-          notion-token: ${{ secrets.NOTION_TOKEN}}
+          notion-token: ${{ secrets.NOTION_TOKEN }}
           root-page-id: ${{ secrets.NOTION_ROOT_PAGE_ID }}
-
-      - name: Commit posts
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: '_posts'
-          message: Sync Notion pages to posts by GitHub Actions
-          committer_name: joao
-          committer_email: joaovitordinizmistrinel2003@gmail.com
+          output-dir: ./_posts/
+          output-page-count: 1
