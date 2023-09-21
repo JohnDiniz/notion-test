@@ -1,27 +1,17 @@
-name: 'build-test'
-on: # rebuild any PRs and main branch changes
-  pull_request:
-  push:
-    branches:
-      - main
-      - 'releases/*'
+name: Export my notion workspace
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"  # Call the export every 6 hours
+  workflow_dispatch: {}
 
 jobs:
-  build: # make sure build/ci work properly
+  export:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: |
-          npm install
-      - run: |
-          npm run all
-  test: # make sure the action works on a clean machine without building
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./
+      - uses: igor-kupczynski/notion-exporter@v1.0.2
         with:
+          pages: ${{ secrets.NOTION_ROOT_PAGE_ID }}  # Pages IDs identified in (step 2)  
+          output-dir: notion-backup
           notion-token: ${{ secrets.NOTION_TOKEN }}
-          root-page-id: ${{ secrets.NOTION_ROOT_PAGE_ID }}
-          output-dir: ./_posts/
-          output-page-count: 1
+          github-token: ${{ secrets.GITHUB_TOKEN }}
